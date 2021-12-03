@@ -1,4 +1,4 @@
-package nl.hkolk.aoc2020
+package nl.hkolk.aoc2021
 
 fun CharSequence.splitIgnoreEmpty(vararg delimiters: String): List<String> {
     return this.split(*delimiters).filter {

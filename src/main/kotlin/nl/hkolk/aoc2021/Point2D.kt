@@ -1,4 +1,4 @@
-package nl.hkolk.aoc2020
+package nl.hkolk.aoc2021
 
 import java.lang.IllegalArgumentException
 import kotlin.math.absoluteValue

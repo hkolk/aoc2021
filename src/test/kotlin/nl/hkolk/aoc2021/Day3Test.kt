@@ -1,10 +1,9 @@
-package nl.hkolk.aoc2020
+package nl.hkolk.aoc2021
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.*
 
 
 @DisplayName("Day 3")

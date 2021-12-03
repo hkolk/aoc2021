@@ -1,4 +1,4 @@
-package nl.hkolk.aoc2020
+package nl.hkolk.aoc2021
 
 class Day2(input: List<String>) {
     private val moves = input.map {

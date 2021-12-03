@@ -1,4 +1,4 @@
-package nl.hkolk.aoc2020
+package nl.hkolk.aoc2021
 
 class Day3(input: List<String>) {
     private val length = input[0].length

@@ -23,7 +23,7 @@
  *
 */
 
-package nl.hkolk.aoc2020
+package nl.hkolk.aoc2021
 
 /**
  * Splits this string into chunks of [size]. The last element might be shorter if the string can't evenly divided

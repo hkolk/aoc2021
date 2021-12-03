@@ -1,4 +1,4 @@
-package nl.hkolk.aoc2020
+package nl.hkolk.aoc2021
 
 class Day1(input: List<String>) {
     private val input = input.map { it.toInt() }
