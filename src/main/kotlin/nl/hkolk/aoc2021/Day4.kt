@@ -1,5 +1,7 @@
 package nl.hkolk.aoc2021
 
+import java.lang.IllegalStateException
+
 class Day4(val input: List<String>) {
 
     class Board(board: List<Int>) {
@@ -47,51 +49,35 @@ class Day4(val input: List<String>) {
         }
     }
 
+    private val draws = input[0].trim().splitIgnoreEmpty(",").map {it.toInt()}
+    private val boards = (2..input.size step 6).map { Board.fromString(input.slice(it..it+4)) }
+
     fun solvePart1(): Int {
-
-        val draws = input[0].trim().splitIgnoreEmpty(",").map {it.toInt()}
-        var boards = mutableListOf<Board>()
-        for(i in 2..input.size step 6) {
-            val board = Board.fromString(input.slice(i..i+4))
-            boards.add(board)
-        }
-
         for(draw in draws) {
-            println("==== Draw $draw   ======")
             for(board in boards) {
                 board.markDraw(draw)
                 if (board.isBingo()){
-                    println(board)
-                    println("Draw: $draw, Board remaining: ${board.remaining()}")
                     return draw * board.remaining()
                 }
             }
         }
-        TODO()
+        throw IllegalStateException("Could not get a bingo")
     }
     fun solvePart2(): Int {
 
-        val draws = input[0].trim().splitIgnoreEmpty(",").map {it.toInt()}
-        var boards = mutableListOf<Board>()
-        for(i in 2..input.size step 6) {
-            val board = Board.fromString(input.slice(i..i+4))
-            boards.add(board)
-        }
-
+        var remainingBoards = boards
         for(draw in draws) {
-            //println("==== Draw $draw   ======")
-            for(board in boards) {
+            for(board in remainingBoards) {
                 board.markDraw(draw)
             }
-            if(boards.size == 1) {
-                if(boards[0].isBingo()) {
-                    return boards[0].remaining() * draw
+            if(remainingBoards.size == 1) {
+                if(remainingBoards[0].isBingo()) {
+                    return remainingBoards[0].remaining() * draw
                 }
             }
-            boards = boards.filter { !it.isBingo() }.toMutableList()
-            println("Remaining boards: ${boards.size}")
+            remainingBoards = remainingBoards.filter { !it.isBingo() }
 
         }
-        TODO()
+        throw IllegalStateException("Did not have a winning board")
     }
 }
