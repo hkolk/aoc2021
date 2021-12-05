@@ -43,5 +43,10 @@ data class Point2D(val x:Int, val y:Int) {
         val DIRECTIONS: List<(Point2D) -> Point2D> = listOf(
             NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST
         )
+
+        fun fromString(coords: String): Point2D {
+            val (x, y) = coords.splitIgnoreEmpty(",").map { it.toInt() }
+            return Point2D(x, y)
+        }
     }
 }

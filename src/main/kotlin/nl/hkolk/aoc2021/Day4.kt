@@ -27,7 +27,7 @@ class Day4(val input: List<String>) {
                 //4..20 step 4
             )
             for(range in bingoRanges) {
-                if(board.slice(range).filter { it != -1 }.isEmpty()) {
+                if(board.slice(range).none { it != -1 }) {
                     return true
                 }
             }
@@ -35,15 +35,15 @@ class Day4(val input: List<String>) {
         }
 
         override fun toString(): String {
-            return board.chunked(5).map { it.toString() }.joinToString("\n")
+            return board.chunked(5).joinToString("\n") { it.toString() }
         }
 
         fun remaining(): Int {
             return board.filter { it != -1 }.sum()
         }
         companion object {
-            fun fromString(input: List<String>): Day4.Board {
-                val rows = input.map { it.splitIgnoreEmpty(" ").map { it.toInt() } }
+            fun fromString(input: List<String>): Board {
+                val rows = input.map { s -> s.splitIgnoreEmpty(" ").map { it.toInt() } }
                 return Board(rows.flatten())
             }
         }
