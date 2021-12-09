@@ -7,6 +7,9 @@ data class Point2D(val x:Int, val y:Int) {
     fun adjacent(): Sequence<Point2D> = sequence {
         DIRECTIONS.map { yield(it(this@Point2D)) }
     }
+    fun diag(): Sequence<Point2D> = sequence {
+        DIRECTIONSDIAG.map { yield(it(this@Point2D)) }
+    }
 
     fun flip(): Point2D = Point2D(-x, y)
 
@@ -41,7 +44,10 @@ data class Point2D(val x:Int, val y:Int) {
         val NORTHWEST: (Point2D) -> Point2D =    { Point2D(x = it.x - 1,  y = it.y + 1  ) }
 
         val DIRECTIONS: List<(Point2D) -> Point2D> = listOf(
-            NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST
+            NORTH, EAST, SOUTH, WEST
+        )
+        val DIRECTIONSDIAG: List<(Point2D) -> Point2D> = listOf(
+            NORTHEAST, SOUTHEAST, SOUTHWEST, NORTHWEST
         )
 
         fun fromString(coords: String): Point2D {
