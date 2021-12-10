@@ -33,7 +33,33 @@ class Day10(val input:List<String>) {
             }
         }
         return score
-        TODO()
     }
-    fun solvePart2(): Int = TODO()
+    fun solvePart2(): Long {
+        var scores = mutableListOf<Long>()
+        for(line in input) {
+            var line = line
+            while (true) {
+                val newline = line.replace("[]", "").replace("()", "").replace("<>", "").replace("{}", "")
+                if (newline.length == line.length) {
+                    break
+                }
+                line = newline
+            }
+            if(!line.contains("""[\]\>\}\)]""".toRegex())) {
+                println("   ${input[0]}")
+                println("-> $line")
+                println("Incomplete!")
+                val score = line.reversed().map { when(it) {
+                    '(' -> 1
+                    '[' -> 2
+                    '{' -> 3
+                    '<' -> 4
+                    else -> 0
+                } }.fold(0L) {accu, value -> accu * 5 + value}
+                println(score)
+                scores.add(score)
+            }
+        }
+        return scores.sorted().get(scores.size/2)
+    }
 }
