@@ -3,10 +3,10 @@ package nl.hkolk.aoc2021
 import kotlin.math.max
 
 class Day13(input: List<String>) {
-    val dots = input.takeWhile { it.isNotBlank() }.map { it.splitIgnoreEmpty(",") }.map { Point2D(it[0].toInt(), it[1].toInt())}
+    val dots = input.takeWhile { it.isNotBlank() }.map { it.splitIgnoreEmpty(",") }.map { Point2D(it[0].toInt(), it[1].toInt())}.toSet()
     val folds = input.takeLastWhile { it.isNotBlank() }.map { it.splitIgnoreEmpty(" ", "=")}.map { it[2] to it[3].toInt() }
 
-    fun printDots(dots: List<Point2D>) {
+    fun printDots(dots: Set<Point2D>) {
         val maxY = dots.fold(0) { acc, cur -> max(acc, cur.y)}
         val maxX = dots.fold(0) { acc, cur -> max(acc, cur.x)}
         for(y in 0..maxY) {
@@ -38,8 +38,8 @@ class Day13(input: List<String>) {
                         it
                     }
                 }
-            }
-            return dots.distinct().size
+            }.toSet()
+            return dots.size
 
         }
         throw IllegalStateException()
@@ -61,10 +61,10 @@ class Day13(input: List<String>) {
                         it
                     }
                 }
-            }
+            }.toSet()
 
         }
         printDots(dots)
-        return dots.distinct().size
+        return dots.size
     }
 }
