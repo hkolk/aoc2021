@@ -1,69 +1,39 @@
 package nl.hkolk.aoc2021
 
+import java.lang.IllegalStateException
 import kotlin.math.max
+import kotlin.math.min
 
 class Day13(input: List<String>) {
-    val dots = input.takeWhile { it.isNotBlank() }.map { it.splitIgnoreEmpty(",") }.map { Point2D(it[0].toInt(), it[1].toInt())}.toSet()
-    val folds = input.takeLastWhile { it.isNotBlank() }.map { it.splitIgnoreEmpty(" ", "=")}.map { it[2] to it[3].toInt() }
+    private val dots = input.takeWhile { it.isNotBlank() }.map { it.splitIgnoreEmpty(",") }.map { Point2D(it[0].toInt(), it[1].toInt())}.toSet()
+    private val folds = input.takeLastWhile { it.isNotBlank() }.map { it.splitIgnoreEmpty(" ", "=")}.map { it[2] to it[3].toInt() }
 
-    fun printDots(dots: Set<Point2D>) {
+    private fun printDots(dots: Set<Point2D>) {
         val maxY = dots.fold(0) { acc, cur -> max(acc, cur.y)}
         val maxX = dots.fold(0) { acc, cur -> max(acc, cur.x)}
         for(y in 0..maxY) {
             for (x in 0..maxX) {
                 if(dots.contains(Point2D(x, y))) {
-                    print("#")
+                    print("░")
                 } else {
-                    print(".")
+                    print(" ")
                 }
             }
             println()
         }
     }
-    fun solvePart1(): Int {
-        var dots = dots
-        println(dots)
-        for(fold in folds) {
-            dots = dots.map {
-                if (fold.first == "x") {
-                    if(it.x > fold.second) {
-                        Point2D(x=fold.second - (it.x - fold.second), y=it.y)
-                    } else {
-                        it
-                    }
-                } else {
-                    if(it.y > fold.second) {
-                        Point2D(x=it.x , y=fold.second - (it.y - fold.second))
-                    } else {
-                        it
-                    }
-                }
-            }.toSet()
-            return dots.size
 
-        }
-        throw IllegalStateException()
-    }
+    private fun fold(dots: Set<Point2D>, fold:Pair<String, Int>): Set<Point2D> = dots.map {
+        when(fold.first) {
+            "x" -> Point2D(x=min(fold.second*2 - it.x, it.x), y=it.y)
+            "y" -> Point2D(x=it.x, y=min(fold.second*2 - it.y, it.y))
+            else -> throw IllegalStateException()
+        } }.toSet()
+
+    fun solvePart1(): Int = fold(dots, folds.first()).size
+
     fun solvePart2(): Int {
-        var dots = dots
-        for(fold in folds) {
-            dots = dots.map {
-                if (fold.first == "x") {
-                    if(it.x > fold.second) {
-                        Point2D(x=fold.second - (it.x - fold.second), y=it.y)
-                    } else {
-                        it
-                    }
-                } else {
-                    if(it.y > fold.second) {
-                        Point2D(x=it.x , y=fold.second - (it.y - fold.second))
-                    } else {
-                        it
-                    }
-                }
-            }.toSet()
-
-        }
+        val dots = folds.fold(dots) { prev, fold -> fold(prev, fold) }
         printDots(dots)
         return dots.size
     }
