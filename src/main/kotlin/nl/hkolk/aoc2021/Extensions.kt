@@ -24,3 +24,5 @@ fun List<String>.splitBy(func: (String) -> Boolean): List<List<String>> {
 fun List<Number>.multiply(): Long = map { it.toLong() }.fold(1L) { acc, it -> acc * it }
 
 fun List<String>.rotate(): List<String> = (0 until first().length).map { x -> (size-1 downTo 0).map { this[it][x] }.joinToString("") }
+
+fun <T:Number, E:Pair<String, T>, K> List<E>.sumValue(keySelector: (E) -> K) = groupingBy(keySelector).aggregate{ _, accu: Long?, element, _ -> element.second.toLong().plus(accu?:0L)}
