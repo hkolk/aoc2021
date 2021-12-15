@@ -1,5 +1,6 @@
 package nl.hkolk.aoc2021
 
+import java.util.*
 import kotlin.math.abs
 
 class Day15(val input: List<String>) {
@@ -21,19 +22,20 @@ class Day15(val input: List<String>) {
             return path.toList()
         }
 
-        val openVertices = mutableSetOf(start)
+        //val openVertices = mutableSetOf(start)
+        val openVertices = PriorityQueue<Pair<Point2D, Int>>(compareBy { it.second })
+        openVertices.add(start to 0)
         val closedVertices = mutableSetOf<Point2D>()
         val costFromStart = mutableMapOf(start to 0)
         val cameFrom = mutableMapOf<Point2D, Point2D>()
 
         val estimatedTotalCost = mutableMapOf(start to heuristic(start, goal))
         while(openVertices.isNotEmpty()) {
-            val current = openVertices.minByOrNull { estimatedTotalCost[it]!! }!!
+            val current = openVertices.remove().first
             if(current == goal) {
                 val path = generatePath(current, cameFrom)
                 return Pair(path, estimatedTotalCost.getValue(goal)) // First Route to finish will be optimum route
             }
-            openVertices.remove(current)
             closedVertices.add(current)
 
             for(next in current.adjacent().filter { map.containsKey(it) }.filterNot { closedVertices.contains(it) }) {
@@ -41,7 +43,7 @@ class Day15(val input: List<String>) {
                 if(!costFromStart.containsKey(next) || newCost < costFromStart[next]!!) {
                     costFromStart[next] = newCost
                     estimatedTotalCost[next] = newCost + heuristic(goal, next)
-                    openVertices.add(next)
+                    openVertices.add(next to (newCost + heuristic(goal, next)))
                     cameFrom[next] = current
                 }
             }
