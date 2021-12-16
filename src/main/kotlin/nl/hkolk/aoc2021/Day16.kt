@@ -5,21 +5,16 @@ import kotlin.math.abs
 
 
 class Day16(val input: List<String>) {
-    /* s must be an even-length string. */
-
 
     class BitInputStream(input: String) {
-        val inputStream = ByteArrayInputStream(hexStringToByteArray(input))
-
+        private val inputStream = ByteArrayInputStream(hexStringToByteArray(input))
         private var bitsBuffer = -1
-
         private var remainingBits = 0
-
 
         fun read(): Int {
             if (remainingBits == 0) {
                 bitsBuffer = inputStream.read()
-                remainingBits = java.lang.Byte.SIZE
+                remainingBits = Byte.SIZE_BITS
             }
             if (bitsBuffer == -1) {
                 println("one bit too many")
@@ -30,24 +25,14 @@ class Day16(val input: List<String>) {
         }
 
         fun readBitsAsInt(number: Int): Int {
-            return (number-1 downTo 0).map { read() shl it }.sum()
-
+            return (number - 1 downTo 0).sumOf { read() shl it }
         }
 
-        fun hexStringToByteArray(input: String): ByteArray {
-            //val s = input.let { if(it.length % 2 == 1) {it+"0"} else {it} }
-            val s = input
-            val len = s.length
-            val data = ByteArray(len / 2)
-            var i = 0
-            while (i < len) {
-                data[i / 2] = (((s[i].digitToIntOrNull(16) ?: -1) shl 4) + s[i + 1].digitToIntOrNull(16)!! ?: -1).toByte()
-                i += 2
-            }
-            return data
+        private fun hexStringToByteArray(s: String): ByteArray {
+            return (s.indices step 2).map {
+                ((s[it].digitToInt(16) shl 4) + (s[it + 1].digitToInt(16))).toByte()
+            }.toByteArray()
         }
-
-
     }
 
     data class Packet(val version: Int, val type: Int, val subpackets: List<Packet>, val value: Long?) {
@@ -148,10 +133,11 @@ class Day16(val input: List<String>) {
         }
     }
 
+    @Suppress("unused")
     fun parseAndPrint(): Int {
         input.map {
             val stream = BitInputStream(it)
-            val (packet, bitsRead) = Packet.fromStream(stream)
+            val (packet, _) = Packet.fromStream(stream)
             packet.prettyPrint()
             println("$it = ${packet.sumVersion()}")
         }
@@ -160,15 +146,12 @@ class Day16(val input: List<String>) {
 
     fun solvePart1(): Int {
         val stream = BitInputStream(input[0])
-        val (packet, bitsRead) = Packet.fromStream(stream)
-        packet.prettyPrint()
+        val (packet, _) = Packet.fromStream(stream)
         return packet.sumVersion()
-        TODO()
     }
     fun solvePart2(): Long {
         val stream = BitInputStream(input[0])
-        val (packet, bitsRead) = Packet.fromStream(stream)
-        packet.prettyPrint()
+        val (packet, _) = Packet.fromStream(stream)
         return packet.getValue()
     }
 }

@@ -26,13 +26,13 @@ A0016C880162017C3686B18A3D4780
     inner class Part1 {
         @Test
         fun `Matches Example`() {
-            val answer = Day16(testInput).parseAndPrint()
-            assertThat(answer).isEqualTo(40)
+            val answer = Day16(testInput).solvePart1()
+            assertThat(answer).isEqualTo(6)
         }
         @Test
         fun `Actual Answer`() {
             val answer = Day16(realInput).solvePart1()
-            assertThat(answer).isEqualTo(602)
+            assertThat(answer).isEqualTo(969)
         }
     }
     @Nested
@@ -41,7 +41,7 @@ A0016C880162017C3686B18A3D4780
         @Test
         fun `Matches Example`() {
             val answer = Day16(testInput).solvePart2()
-            assertThat(answer).isEqualTo(315)
+            assertThat(answer).isEqualTo(2021L)
         }
         @Test
         fun `Actual Answer`() {
