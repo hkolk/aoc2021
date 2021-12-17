@@ -125,10 +125,10 @@ class Day16(val input: List<String>) {
                 read+=5
                 if(groups.size> 15) {
                     println(groups)
-                    println(groups.mapIndexed { idx, i -> i shl (4 * abs(idx + 1 - groups.size)) }.sum())
+                    println(groups.fold(0L) { accu, item -> (accu shl 4) + item })
                     throw IllegalStateException("Overflow!!!")
                 }
-                return groups.mapIndexed { idx, i -> i shl (4 * abs(idx + 1 - groups.size)) }.sum() to read
+                return groups.fold(0L) { accu, item -> (accu shl 4) + item } to read
             }
         }
     }
