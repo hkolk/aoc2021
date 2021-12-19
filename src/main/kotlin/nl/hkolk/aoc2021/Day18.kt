@@ -5,126 +5,99 @@ import java.lang.IllegalStateException
 class Day18(val input: List<String>) {
     private val expressions = input.map { parser(it.iterator()) }
 
-    sealed class FishTerm(var parent: FishPair? = null) {
-        fun plus(that: FishTerm): FishPair = when(this) {
-                is FishPair -> FishPair(this, that)
-                is FishValue -> throw IllegalStateException("Adding value to pair?!")
+    class FishNode(var left: FishNode?=null, var right: FishNode?=null, var value:Int?=null) {
+        fun plus(that: FishNode): FishNode {
+            if (this.value == null) {
+                return FishNode(this, that)
+            } else {
+                throw IllegalStateException("Adding value to pair?!")
             }
-        abstract fun toSmallString() : String
-        abstract fun getMagnitude(): Int
-        abstract fun clone(): FishTerm
-    }
-    class FishPair(var left:FishTerm, var right:FishTerm): FishTerm() {
-        override fun toSmallString(): String = "[${left.toSmallString()},${right.toSmallString()}]"
+        }
+        fun clone(): FishNode {
+            return FishNode(left?.clone(), right?.clone(), value)
+        }
+        fun toSmallString(): String {
+            return if(value == null) {
+                "[${left!!.toSmallString()},${right!!.toSmallString()}]"
+            } else {
+                value.toString()
+            }
+        }
         override fun toString(): String = toSmallString()
 
-        override fun getMagnitude(): Int {
-            return left.getMagnitude() * 3 + right.getMagnitude() * 2
-        }
-        override fun clone(): FishPair {
-            return FishPair(left.clone(), right.clone())
+        fun getMagnitude(): Int {
+            return if(value != null) {
+                value!!
+            } else {
+                left!!.getMagnitude() * 3 + right!!.getMagnitude() * 2
+            }
         }
 
-        fun findExplode(depth:Int=0): FishPair? {
-            if(depth == 4 && left is FishValue && right is FishValue) { return this }
-            if(left is FishPair) {
-                val res = (left as FishPair).findExplode(depth+1)
-                if(res != null) {
-                    return res
-                }
+        fun findExplode(depth:Int=0): FishNode? {
+            if(value != null) { return null }
+            if(depth == 4 && left?.value != null && right?.value != null) { return this }
+            left!!.findExplode(depth+1).let { if (it != null) return it }
+            right!!.findExplode(depth+1).let { if (it != null) return it }
+            return null
+        }
+        fun findSplit(): FishNode? {
+            if((left?.value ?: 0) > 9) {
+                return left
             }
-            if(right is FishPair) {
-                val res = (right  as FishPair).findExplode(depth+1)
-                if(res != null) {
-                    return res
-                }
+            if(left?.value == null) {
+                left?.findSplit().let { if(it != null) return it }
+            }
+            if((right?.value ?: 0) > 9) {
+                return right
+            }
+            if(right?.value == null) {
+                right?.findSplit().let { if(it != null) return it }
             }
             return null
         }
-
-        fun findSplit(): FishValue? {
-            if(left is FishValue && (left as FishValue).value > 9) {
-                return left as FishValue
-            }
-            if(left is FishPair) {
-                val res = (left as FishPair).findSplit()
-                if(res != null) {
-                    return res
-                }
-            }
-            if(right is FishValue && (right as FishValue).value > 9) {
-                return right as FishValue
-            }
-            if(right is FishPair) {
-                val res = (right  as FishPair).findSplit()
-                if(res != null) {
-                    return res
-                }
-            }
-            return null
-        }
-
-        fun replaceWith(find:FishTerm, replacement: FishTerm) {
+        fun replaceWith(find:FishNode, replacement: FishNode) {
             if(left == find) {
                 left = replacement
             } else if (right == find) {
                 right = replacement
             } else {
-                if(left is FishPair) {
-                    (left as FishPair).replaceWith(find, replacement)
-                }
-                if(right is FishPair) {
-                    (right as FishPair).replaceWith(find, replacement)
-                }
+                left?.replaceWith(find, replacement)
+                right?.replaceWith(find, replacement)
             }
         }
-
-        fun getValues(): List<FishValue> {
-            val ret = mutableListOf<FishValue>()
-            when(left) {
-                is FishValue -> ret.add(left as FishValue)
-                is FishPair -> ret.addAll((left as FishPair).getValues())
+        fun getValues(): List<FishNode> {
+            val ret = mutableListOf<FishNode>()
+            if(left?.value != null) {
+                ret.add(left!!)
+            } else {
+                ret.addAll(left!!.getValues())
             }
-            when(right) {
-                is FishValue -> ret.add(right as FishValue)
-                is FishPair -> ret.addAll((right as FishPair).getValues())
+            if(right?.value != null) {
+                ret.add(right!!)
+            } else {
+                ret.addAll(right!!.getValues())
             }
             return ret
         }
     }
 
-    class FishValue(var value:Int): FishTerm() {
-        override fun toSmallString(): String = value.toString()
-        override fun toString(): String = value.toString()
-        override fun getMagnitude(): Int {
-            return value
-        }
-        override fun clone(): FishValue {
-            return FishValue(value)
-        }
-    }
 
-
-
-    private fun parser(input: Iterator<Char>): FishTerm {
-        var left: FishTerm? = null
-        var right: FishTerm? = null
+    private fun parser(input: Iterator<Char>): FishNode {
+        var left: FishNode? = null
+        var right: FishNode? = null
         while(true) {
             when(val next = input.next()) {
                 '[' -> left = parser(input)
                 ',' -> right = parser(input)
-                in '0'..'9' -> return FishValue(next.digitToInt())
+                in '0'..'9' -> return FishNode(value=next.digitToInt())
                 ']' -> {
-                    val ret = FishPair(left!!, right!!)
-                    ret.left.parent = ret
-                    ret.right.parent = ret
-                    return ret
+                    return FishNode(left=left!!, right=right!!)
                 }
             }
         }
     }
     // explode [[1, [2, 3]], 4]
-    private fun processExplode(expression:FishPair, verbose:Boolean=false): Boolean {
+    private fun processExplode(expression:FishNode, verbose:Boolean=false): Boolean {
         val explode = expression.findExplode()
         if(explode != null) {
             if(verbose) {println(explode)}
@@ -133,38 +106,38 @@ class Day18(val input: List<String>) {
             val leftIndex = values.indexOfFirst { it == explode.left }
             if(verbose) {println(leftIndex)}
             if(leftIndex > 0) {
-                values[leftIndex-1].value += (explode.left as FishValue?)?.value!!
+                values[leftIndex-1].value = values[leftIndex-1].value?.plus(explode.left?.value!!)
             }
 
             val rightIndex = values.indexOfFirst { it == explode.right }
             if(verbose) {println(rightIndex)}
             if(rightIndex < values.size-1) {
-                values[rightIndex+1].value += (explode.right as FishValue?)?.value!!
+                values[rightIndex+1].value = values[rightIndex+1].value?.plus(explode.right?.value!!)
             }
             if(verbose) {println(values)}
-            expression.replaceWith(explode, FishValue(0))
+            expression.replaceWith(explode, FishNode(value=0))
             if(verbose) {println(expression)}
             return true
         }
         return false
     }
 
-    fun processSplit(expression:FishPair, verbose:Boolean=false): Boolean {
+    private fun processSplit(expression:FishNode, verbose:Boolean=false): Boolean {
         val split = expression.findSplit()
         if(split != null) {
             if(verbose) { println(split)}
-            val left = FishValue(split.value / 2)
-            val right = FishValue((split.value/2) + (split.value%2))
-            if(verbose) { println(FishPair(left, right))}
+            val left = FishNode(value=split.value!! / 2)
+            val right = FishNode(value=(split.value!!/2) + (split.value!!%2))
+            if(verbose) { println(FishNode(left, right))}
 
-            expression.replaceWith(split, FishPair(left, right) )
+            expression.replaceWith(split, FishNode(left=left, right=right) )
             if(verbose) { println(expression)}
             return true
         }
         return false
     }
 
-    private fun plusAndReduce(expression: FishTerm, addition: FishTerm, verbose: Boolean=false): FishPair {
+    private fun plusAndReduce(expression: FishNode, addition: FishNode, verbose: Boolean=false): FishNode {
         val result = expression.clone().plus(addition.clone())
         if(verbose) { println("Addition!") }
         if(verbose) { println(result.toSmallString()) }
@@ -205,6 +178,5 @@ class Day18(val input: List<String>) {
             )
         }
         return combinations.maxOf { it }
-        TODO()
     }
 }
