@@ -8,18 +8,9 @@ class Day17(val input: List<String>) {
 
     fun solvePart1() : Int {
         // target area: x=211..232, y=-124..-69
-        val (xBox, yBox) = input[0].splitIgnoreEmpty(" ").drop(2).map { it.splitIgnoreEmpty("=", ".", ",").drop(1).map { it.toInt() } }
-        //println(xBox)
-        //val x = 7
-        //val distance = (0..x).map { x - it }.sum()
-        //println("x: $x, distance: $distance")
-
-        println(yBox)
-        val y = yBox.maxOf { abs(it) } - 1
-        println(y)
-        val height = (0..y).map { y - it }.sum()
-        println(height)
-        return height
+        val (_, yBox) = input[0].splitIgnoreEmpty(" ").drop(2).map { it.splitIgnoreEmpty("=", ".", ",").drop(1).map { it.toInt() } }
+        val y = abs(yBox[0]) - 1
+        return (0..y).sumOf { y - it }
     }
     private fun simulate(xSpeed: Int, ySpeed: Int, xBox: List<Int>, yBox: List<Int>): Boolean {
         var x = 0
@@ -39,12 +30,11 @@ class Day17(val input: List<String>) {
     fun solvePart2() : Int {
         val (xBox, yBox) = input[0].splitIgnoreEmpty(" ").drop(2).map { it.splitIgnoreEmpty("=", ".", ",").drop(1).map { it.toInt() } }
 
-        val minY = yBox.minOf { it }
+        val minY = yBox[0]
         val maxY = abs(minY) - 1
-        val maxX = xBox.maxOf{ it }
+        val maxX = xBox[1]
         var counter = 0
         for(y in minY..maxY) {
-            // optimize minX ?
             for(x in 1..maxX) {
                 if(simulate(x, y, xBox, yBox)) {
                     counter++
@@ -52,6 +42,5 @@ class Day17(val input: List<String>) {
             }
         }
         return counter
-        TODO()
     }
 }
