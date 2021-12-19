@@ -10,6 +10,10 @@ class Day19(val input: List<String>) {
             return Point3D((x - other.x).absoluteValue, (y - other.y).absoluteValue, (z - other.z).absoluteValue)
         }
 
+        fun manhattan(other: Point3D): Int {
+            return (other.x - x).absoluteValue + (other.y - y).absoluteValue + (other.z - z).absoluteValue
+        }
+
         companion object {
             fun getTransformers(): List<List<(Point3D) -> Point3D>> {
                 return listOf({i: Point3D -> i},{i: Point3D -> i.copy(x=0-i.x)}).flatMap { xMod ->
@@ -42,70 +46,66 @@ class Day19(val input: List<String>) {
         return this.combinations(2).map { it[0].distance(it[1]) }.toList()
     }
 
-    fun solvePart1(): Int {
+    private fun fit(rotation: Set<Point3D>, universe: Set<Point3D>): ((Point3D) -> Point3D)? {
+        for(pointLocal in rotation) {
+            for(pointUniverse in universe) {
+                val xMod = pointUniverse.x - pointLocal.x
+                val yMod = pointUniverse.y - pointLocal.y
+                val zMod = pointUniverse.z - pointLocal.z
+                val modifier: (Point3D)-> Point3D = { Point3D(it.x + xMod, it.y+yMod, it.z+zMod)}
+                val intersect = rotation.map(modifier).intersect(universe)
+                if(intersect.size >= 12) {
+                    //println("Intersect!!")
+                    return modifier
+                }
+            }
+        }
+        return null
+    }
+
+    private fun createUniverse(): Pair<Set<Point3D>, Set<Point3D>> {
+        val foundScanners = mutableSetOf(Point3D(0, 0, 0))
         val universe = scanners.first().toMutableSet()
-        println(universe.distances())
-        val rotatedScanners = (scanners.drop(1).take(1)).map { scanner ->
+        //println(universe.distances())
+        var rotatedScanners = (scanners.drop(1)).map { scanner ->
             Point3D.getTransformers().map { transformerChain ->
                 scanner.map { point ->
                     transformerChain.fold(point) { accu, transformer -> transformer(accu) }
                 }.toSet()
             }
-        }
+        }.toMutableList()
 
-        val found = 1
-        while(found < scanners.size) {
-            var step = 1
-            var (xMin, xMax) = universe.minAndMaxOf { it.x }
-            var (yMin, yMax) = universe.minAndMaxOf { it.y }
-            var (zMin, zMax) = universe.minAndMaxOf { it.z }
-
-            
-
-            for (xMod in (xMin..xMax)) {
-                for (yMod in (yMin..yMax)) {
-                    for (zMod in (zMin..zMax)) {
-                        println("$xMod, $yMod, $zMod")
-                        val shiftedUniverse = universe.map { Point3D(it.x + xMod, it.x + yMod, it.x + zMod) }.toSet()
-
-                        for(projections in rotatedScanners) {
-                            for (projection in projections) {
-                                if (step++ % 1_000_000 == 0) {
-                                    println("Step: $step")
-                                }
-                                //println("$projection, $shiftedUniverse")
-                                if (projection.intersect(shiftedUniverse).size >= 12) {
-                                    println("Intersection!")
-                                    TODO()
-                                }
-                            }
+        outer@ while(rotatedScanners.isNotEmpty()  ) {
+            for ((index, scanner) in rotatedScanners.withIndex()) {
+                for (rotation in scanner) {
+                    val intersect = rotation.distances().intersect(universe.distances())
+                    if (intersect.size >= 12) {
+                        //println("Found possible intersect in scanner $index")
+                        val modifier = fit(rotation, universe)
+                        if (modifier != null) {
+                            universe.addAll(rotation.map(modifier))
+                            //println(universe.size)
+                            rotatedScanners.removeAt(index)
+                            foundScanners.add(modifier(Point3D(0, 0, 0)))
+                            continue@outer
                         }
                     }
                 }
             }
         }
-        TODO()
-    }
-    fun solvePart2(): Int {
-        TODO()
+        return universe to foundScanners
     }
 
-    @OptIn(kotlin.experimental.ExperimentalTypeInference::class)
-    @OverloadResolutionByLambdaReturnType
-    inline fun <T, R : Comparable<R>> Iterable<T>.minAndMaxOf(selector: (T) -> R): Pair<R, R> {
-        val iterator = iterator()
-        if (!iterator.hasNext()) throw NoSuchElementException()
-        var maxValue = selector(iterator.next())
-        var minValue = maxValue
-        while (iterator.hasNext()) {
-            val v = selector(iterator.next())
-            if (maxValue < v) {
-                maxValue = v
-            }
-            if (minValue > v) {
-                minValue = v
-            }
-        }
-        return minValue to maxValue
+    fun solvePart1(): Int {
+        val(universe, _) = createUniverse()
+        return universe.size
     }
+
+
+
+    fun solvePart2(): Int {
+        val(_, scanners) = createUniverse()
+        return scanners.combinations(2).maxOf{ it[0].manhattan(it[1])}
+    }
+
 }
