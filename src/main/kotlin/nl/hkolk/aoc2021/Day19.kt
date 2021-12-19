@@ -6,6 +6,10 @@ import kotlin.math.absoluteValue
 class Day19(val input: List<String>) {
     data class Point3D(val x:Int, val y:Int, val z:Int) {
 
+        fun distance(other: Point3D): Point3D {
+            return Point3D((x - other.x).absoluteValue, (y - other.y).absoluteValue, (z - other.z).absoluteValue)
+        }
+
         companion object {
             fun getTransformers(): List<List<(Point3D) -> Point3D>> {
                 return listOf({i: Point3D -> i},{i: Point3D -> i.copy(x=0-i.x)}).flatMap { xMod ->
@@ -28,44 +32,58 @@ class Day19(val input: List<String>) {
         }
     }
 
-    val scanners = input.splitBy { it.isEmpty() }.map { scanner ->
+    private val scanners = input.splitBy { it.isEmpty() }.map { scanner ->
         scanner.drop(1).map { coord ->
             coord.splitIgnoreEmpty(",").map { it.toInt() }
         }.map { Point3D(it[0], it[1], it[2]) }.toSet()
     }
 
+    fun Set<Point3D>.distances(): List<Point3D> {
+        return this.combinations(2).map { it[0].distance(it[1]) }.toList()
+    }
+
     fun solvePart1(): Int {
         val universe = scanners.first().toMutableSet()
-        for(scanner in scanners.drop(1)) {
-            val projections = Point3D.getTransformers().map { transformerChain ->
+        println(universe.distances())
+        val rotatedScanners = (scanners.drop(1).take(1)).map { scanner ->
+            Point3D.getTransformers().map { transformerChain ->
                 scanner.map { point ->
                     transformerChain.fold(point) { accu, transformer -> transformer(accu) }
                 }.toSet()
             }
-            val(xMin, xMax) = universe.minAndMaxOf{ it.x }
-            val(yMin, yMax) = universe.minAndMaxOf{ it.y }
-            val(zMin, zMax) = universe.minAndMaxOf{ it.z }
-            println((xMax-xMin)*(yMax-yMin)*(zMax-zMin))
+        }
 
+        val found = 1
+        while(found < scanners.size) {
             var step = 1
-            for (xMod in (xMin/2..xMax/2)+(xMin..xMin/2)+(xMax/2..xMax)) {
-                for (yMod in (yMin/2..yMax/2)+(yMin..yMin/2)+(yMax/2..yMax)) {
-                    for (zMod in (zMin/2..zMax/2)+(zMin..zMin/2)+(zMax/2..zMax)) {
+            var (xMin, xMax) = universe.minAndMaxOf { it.x }
+            var (yMin, yMax) = universe.minAndMaxOf { it.y }
+            var (zMin, zMax) = universe.minAndMaxOf { it.z }
+
+            
+
+            for (xMod in (xMin..xMax)) {
+                for (yMod in (yMin..yMax)) {
+                    for (zMod in (zMin..zMax)) {
+                        println("$xMod, $yMod, $zMod")
                         val shiftedUniverse = universe.map { Point3D(it.x + xMod, it.x + yMod, it.x + zMod) }.toSet()
-                        for (projection in projections) {
-                            if(step++ % 1_000_000 == 0) {
-                                println("Step: $step")
-                            }
-                            if (projection.intersect(shiftedUniverse).size >= 12) {
-                                println("Intersection!")
+
+                        for(projections in rotatedScanners) {
+                            for (projection in projections) {
+                                if (step++ % 1_000_000 == 0) {
+                                    println("Step: $step")
+                                }
+                                //println("$projection, $shiftedUniverse")
+                                if (projection.intersect(shiftedUniverse).size >= 12) {
+                                    println("Intersection!")
+                                    TODO()
+                                }
                             }
                         }
                     }
                 }
-
             }
         }
-
         TODO()
     }
     fun solvePart2(): Int {
