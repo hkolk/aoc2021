@@ -42,8 +42,8 @@ class Day19(val input: List<String>) {
         }.map { Point3D(it[0], it[1], it[2]) }.toSet()
     }
 
-    fun Set<Point3D>.distances(): List<Point3D> {
-        return this.combinations(2).map { it[0].distance(it[1]) }.toList()
+    fun Set<Point3D>.distances(): Set<Point3D> {
+        return this.combinations(2).map { it[0].distance(it[1]) }.toSet()
     }
 
     private fun fit(rotation: Set<Point3D>, universe: Set<Point3D>): ((Point3D) -> Point3D)? {
@@ -66,7 +66,7 @@ class Day19(val input: List<String>) {
     private fun createUniverse(): Pair<Set<Point3D>, Set<Point3D>> {
         val foundScanners = mutableSetOf(Point3D(0, 0, 0))
         val universe = scanners.first().toMutableSet()
-        //println(universe.distances())
+
         var rotatedScanners = (scanners.drop(1)).map { scanner ->
             Point3D.getTransformers().map { transformerChain ->
                 scanner.map { point ->
@@ -76,15 +76,14 @@ class Day19(val input: List<String>) {
         }.toMutableList()
 
         outer@ while(rotatedScanners.isNotEmpty()  ) {
+            val universeDistances = universe.distances()
             for ((index, scanner) in rotatedScanners.withIndex()) {
                 for (rotation in scanner) {
-                    val intersect = rotation.distances().intersect(universe.distances())
+                    val intersect = rotation.distances().intersect(universeDistances)
                     if (intersect.size >= 12) {
-                        //println("Found possible intersect in scanner $index")
                         val modifier = fit(rotation, universe)
                         if (modifier != null) {
                             universe.addAll(rotation.map(modifier))
-                            //println(universe.size)
                             rotatedScanners.removeAt(index)
                             foundScanners.add(modifier(Point3D(0, 0, 0)))
                             continue@outer
