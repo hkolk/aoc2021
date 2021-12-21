@@ -21,6 +21,25 @@ fun List<String>.splitBy(func: (String) -> Boolean): List<List<String>> {
     return ret
 }
 
+@OptIn(kotlin.experimental.ExperimentalTypeInference::class)
+@OverloadResolutionByLambdaReturnType
+inline fun <T, R : Comparable<R>> Iterable<T>.minAndMaxOf(selector: (T) -> R): Pair<R, R> {
+    val iterator = iterator()
+    if (!iterator.hasNext()) throw NoSuchElementException()
+    var maxValue = selector(iterator.next())
+    var minValue = maxValue
+    while (iterator.hasNext()) {
+        val v = selector(iterator.next())
+        if (maxValue < v) {
+            maxValue = v
+        }
+        if(minValue > v) {
+            minValue = v
+        }
+    }
+    return minValue to maxValue
+}
+
 fun List<Number>.multiply(): Long = map { it.toLong() }.fold(1L) { acc, it -> acc * it }
 
 fun List<String>.rotate(): List<String> = (0 until first().length).map { x -> (size-1 downTo 0).map { this[it][x] }.joinToString("") }

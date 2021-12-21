@@ -11,6 +11,21 @@ data class Point2D(val x:Int, val y:Int) {
         DIRECTIONSDIAG.map { yield(it(this@Point2D)) }
     }
 
+    fun surrounding(): List<Point2D> {
+        return listOf(
+            NORTHWEST(this),
+            NORTH(this),
+            NORTHEAST(this),
+            WEST(this),
+            this.copy(),
+            EAST(this),
+            SOUTHWEST(this),
+            SOUTH(this),
+            SOUTHEAST(this)
+
+        )
+    }
+
     fun flip(): Point2D = Point2D(-x, y)
 
     fun manhattan(): Int {
@@ -34,14 +49,14 @@ data class Point2D(val x:Int, val y:Int) {
     }
 
     companion object {
-        val NORTH: (Point2D) -> Point2D =        { Point2D(x = it.x,      y = it.y + 1  ) }
-        val NORTHEAST: (Point2D) -> Point2D =    { Point2D(x = it.x + 1,  y = it.y + 1  ) }
+        val NORTH: (Point2D) -> Point2D =        { Point2D(x = it.x,      y = it.y - 1  ) }
+        val NORTHEAST: (Point2D) -> Point2D =    { Point2D(x = it.x + 1,  y = it.y - 1  ) }
         val EAST: (Point2D) -> Point2D =         { Point2D(x = it.x + 1,  y = it.y      ) }
-        val SOUTHEAST: (Point2D) -> Point2D =    { Point2D(x = it.x + 1,  y = it.y - 1  ) }
-        val SOUTH: (Point2D) -> Point2D =        { Point2D(x = it.x,      y = it.y - 1  ) }
-        val SOUTHWEST: (Point2D) -> Point2D =    { Point2D(x = it.x - 1,  y = it.y - 1  ) }
+        val SOUTHEAST: (Point2D) -> Point2D =    { Point2D(x = it.x + 1,  y = it.y + 1  ) }
+        val SOUTH: (Point2D) -> Point2D =        { Point2D(x = it.x,      y = it.y + 1  ) }
+        val SOUTHWEST: (Point2D) -> Point2D =    { Point2D(x = it.x - 1,  y = it.y + 1  ) }
         val WEST: (Point2D) -> Point2D =         { Point2D(x = it.x - 1,  y = it.y      ) }
-        val NORTHWEST: (Point2D) -> Point2D =    { Point2D(x = it.x - 1,  y = it.y + 1  ) }
+        val NORTHWEST: (Point2D) -> Point2D =    { Point2D(x = it.x - 1,  y = it.y - 1  ) }
 
         val DIRECTIONS: List<(Point2D) -> Point2D> = listOf(
             NORTH, EAST, SOUTH, WEST
@@ -54,5 +69,19 @@ data class Point2D(val x:Int, val y:Int) {
             val (x, y) = coords.splitIgnoreEmpty(",").map { it.toInt() }
             return Point2D(x, y)
         }
+    }
+}
+
+
+fun Map<Point2D, Int>.print() {
+    for(y in keys.minAndMaxOf { it.y }.let { it.first..it.second }) {
+        for(x in keys.minAndMaxOf { it.x }.let { it.first..it.second }) {
+            if((this[Point2D(x, y)]?:0) != 0) {
+                print('░')
+            } else {
+                print(' ')
+            }
+        }
+        println()
     }
 }
