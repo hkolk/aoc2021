@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 
-@DisplayName("Day 20")
+@DisplayName("Day 21")
 class Day21Test {
 
     val testInput =
