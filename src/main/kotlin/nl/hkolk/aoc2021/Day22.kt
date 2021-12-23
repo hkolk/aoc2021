@@ -48,27 +48,15 @@ class Day22(val input: List<String>) {
             }
         }
         return reactor.size
-        TODO()
     }
 
-    class Box(val id: Int, val on: Boolean, val x: Pair<Int, Int>, val y: Pair<Int, Int>, val z: Pair<Int, Int>) {
-        override fun toString(): String = "[Box $id - $on] x: $x, y: $y, z: $z"
 
-        fun Pair<Int, Int>.diff() = (second+1 - first).absoluteValue.toLong()
+    class Box(val on: Boolean, val x: Pair<Int, Int>, val y: Pair<Int, Int>, val z: Pair<Int, Int>) {
+        override fun toString(): String = "[Box on: $on] x: $x, y: $y, z: $z"
+
+        fun Pair<Int, Int>.diff() = (second+1 - first).toLong().coerceAtLeast(0)
         fun size(): Long = x.diff() * y.diff() * z.diff()
 
-        fun cutOutAndCount(offList: List<Box>) : Long {
-            var count = x.diff() * y.diff() * z.diff()
-            for(box in offList) {
-                count -= intersectCount(box)
-            }
-            // for offbox
-              // remove intersect
-              // for processed
-                 // re-add intersect (because double-removed)
-              // add to processed
-            return count
-        }
         fun intersectCount(other: Box): Long {
             val minX = max(x.first, other.x.first)
             val maxX = min(x.second, other.x.second)+1
@@ -81,14 +69,38 @@ class Day22(val input: List<String>) {
             if(minZ >= maxZ) { return 0 }
             return (maxX - minX).toLong() * (maxY - minY).toLong() * (maxZ - minZ).toLong()
         }
+        fun cutOut(other: Box): List<Box> {
+            if(intersectCount(other) == 0L) {
+                return listOf(this)
+            }
+            // Big flanks
+            val xr = max(other.x.first, x.first) to min(other.x.second, x.second)
+            val zr = max(other.z.first, z.first) to min(other.z.second, z.second)
+            return listOf(
+                Box(true, x, y, z.first to other.z.first-1),
+                Box(true, x, y, other.z.second+1 to z.second),
+
+                // Medium sides
+                Box(true, x.first to other.x.first - 1, y, zr),
+                Box(true, other.x.second + 1 to x.second, y, zr),
+
+                // Small top & bottom
+                Box(true, xr, y.first to other.y.first - 1, zr),
+                Box(true, xr, other.y.second + 1 to y.second, zr)
+            ).filter { it.size() > 0 }
+
+        }
     }
 
     fun solvePart2(): Long {
 
-        /*val box1 = Box(1, true, 0 to 10, 0 to 10, 0 to 10)
-        val cnt = box1.intersectCount(Box(2, false,  11 to 12, 4 to 7, 1 to 1))
-        println(cnt)
-        TODO()
+        /*val box1 = Box(true, 0 to 3, 0 to 3, 0 to 3)
+        assert(box1.size() == 64L)
+        assert(box1.cutOut(Box(true, 1 to 2, 1 to 2, 0 to 1)).sumOf{it.size()} == 56L)
+        box1.cutOut(Box(true, -1 to 4, -1 to 4, -1 to 4)).run {
+            this.forEach { println("$it: ${it.size()}") }
+            println(this.sumOf {it.size()})
+        }
         */
 
         val boxes = input.mapIndexed { id, line ->
@@ -99,21 +111,16 @@ class Day22(val input: List<String>) {
                 parts[1].toInt() to parts[2].toInt()
             }
             box.forEach { assert(it.first < it.second) }
-            Box(id, switchOn, box[0], box[1], box[2])
+            Box(switchOn, box[0], box[1], box[2])
         }.toMutableList()
 
-        var count = 0L
-        while(boxes.isNotEmpty()) {
-            val box = boxes.removeFirst()
+        var universe = listOf<Box>(boxes.first())
+        for(box in boxes.drop(1)) {
+            universe = universe.flatMap { it.cutOut(box) }
             if(box.on) {
-                count += box.cutOutAndCount(boxes)
-                println("Count: $count")
+                universe = universe.plus(box)
             }
-            println(box.size())
         }
-        return count
-
-        println(boxes)
-        TODO()
+        return universe.sumOf { it.size()}
     }
 }
