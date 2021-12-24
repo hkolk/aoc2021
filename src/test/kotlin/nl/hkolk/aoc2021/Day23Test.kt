@@ -17,7 +17,16 @@ class Day23Test {
   #A#D#C#A#
   #########
         """.trimIndent().split("\n")
-
+    val testInput2 =
+        """
+#############
+#...........#
+###B#C#B#D###
+  #D#C#B#A#
+  #D#B#A#C#
+  #A#D#C#A#
+  #########
+        """.trimIndent().split("\n")
     val realInput = Resources.resourceAsList("day23.txt")
 
     @Nested
@@ -39,7 +48,7 @@ class Day23Test {
     inner class Part2 {
         @Test
         fun `Matches Example`() {
-            val answer = Day23(testInput).solvePart2()
+            val answer = Day23(testInput2).solvePart2()
             assertThat(answer).isEqualTo(2758514936282235L)
         }
         @Test
