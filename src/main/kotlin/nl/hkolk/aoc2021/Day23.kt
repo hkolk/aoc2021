@@ -2,7 +2,7 @@ package nl.hkolk.aoc2021
 
 class Day23(val input: List<String>) {
 
-    data class Amphipod(val type: String, val location: Int) {
+    data class Amphipod(val type: String, val location: Int, var movedOut:Boolean = false) {
         fun getCost() = when(type) {
             "A" -> 1
             "B" -> 10
@@ -46,9 +46,26 @@ class Day23(val input: List<String>) {
     val reserved = setOf(12, 14, 16, 18)
 
     fun makeMove(amphipods: List<Amphipod>, score: Int, depth:Int): List<Int> {
-        print(" ".repeated(depth).joinToString { "" })
-        println(amphipods)
-        if(depth > 10) {
+        var verbose = false
+        if( amphipods.count{it.location in 10..20} == 1 &&
+            amphipods.any { it.location == 13 && it.type == "B" } &&
+            amphipods.any { it.location == 0 && it.type == "B" }
+        ) {
+            verbose = true
+            print(" ".repeated(depth).joinToString(""))
+            println(amphipods)
+        }
+        if( amphipods.count{it.location in 10..20} == 2 &&
+            amphipods.any { it.location == 13 && it.type == "B" } &&
+            amphipods.any { it.location == 15 && it.type == "C" } &&
+            amphipods.any { it.location == 0 && it.type == "B" } &&
+            amphipods.any { it.location == 6 && it.type == "C" }
+                ) {
+            verbose = true
+            print(" ".repeated(depth).joinToString(""))
+            println(amphipods)
+        }
+        if(depth > 10 || amphipods.count{it.location in 10..20} > 4) {
             return listOf()
         }
 
@@ -68,20 +85,41 @@ class Day23(val input: List<String>) {
                 else -> false
             }
             if (fromRoomToHallway) {
-                val locations = (10..20).toList().filter { it !in reserved }
-                for (to in locations) {
-                    val route = routeTo(amphipod.location, to)
-                    if (route.intersect(occupied.filter { it != amphipod.location }.toSet()).isEmpty()) {
-                        scores += makeMove(amphipods - amphipod + Amphipod(amphipod.type, to), score, depth+1)
+                if(!amphipod.inOwnRoom() || !amphipod.movedOut) {
+                    val locations = (10..20).toList().filter { it !in reserved }
+                    for (to in locations) {
+                        val route = routeTo(amphipod.location, to)
+                        if (route.intersect(occupied.filter { it != amphipod.location }.toSet()).isEmpty()) {
+                            if(verbose) {
+                                print(" ".repeated(depth).joinToString(""))
+                                println("Simulate move: $amphipod to $to")
+                            }
+                            scores += makeMove(amphipods - amphipod + Amphipod(amphipod.type, to, true), score, depth + 1)
+                        }
                     }
                 }
             }
             if (amphipod.location in 10..20) {
-                if(amphipods.map { !it.inOwnRoom() && rooms[amphipod.type]!!.contains(it.location) }.isEmpty()) {
+                val ownRoom = rooms[amphipod.type]!!
+                val safeOwnRoom = amphipods.filter { it.location in ownRoom && it.type != amphipod.type }.isEmpty()
+                if(verbose && amphipod.type == "C" && amphipod.location == 15) {
+                    print(" ".repeated(depth).joinToString(""))
+                    println("Safe own room: $safeOwnRoom ($ownRoom contains ${amphipods.filter { it.location in ownRoom}})")
+                    println()
+                }
+                if(safeOwnRoom) {
+                    println(amphipod)
+                    println(amphipods)
+                }
+                if(safeOwnRoom) {
                     for (to in rooms[amphipod.type]!!) {
                         val route = routeTo(amphipod.location, to)
                         if (route.intersect(occupied.filter { it != amphipod.location }.toSet()).isEmpty()) {
-                            scores += makeMove(amphipods - amphipod + Amphipod(amphipod.type, to), score, depth + 1)
+                            if(verbose) {
+                                print(" ".repeated(depth).joinToString(""))
+                                println("Simulate move: $amphipod to $to")
+                            }
+                            scores += makeMove(amphipods - amphipod + Amphipod(amphipod.type, to, true), score, depth + 1)
                         }
                     }
                 }
@@ -97,6 +135,7 @@ class Day23(val input: List<String>) {
 
         val rawRooms = input.drop(2).take(2).flatMap {  it.splitIgnoreEmpty(" ", "#", ".") }
         val amphipods = rawRooms.mapIndexed { idx, name -> Amphipod(name, idx)}
+        println(amphipods)
         // ((idx % 4) * 2) + (idx/4))
         makeMove(amphipods, 0, 0)
         //println(routeTo(20, 6))
