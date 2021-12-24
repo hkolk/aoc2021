@@ -26,12 +26,12 @@ class Day23Test {
         @Test
         fun `Matches Example`() {
             val answer = Day23(testInput).solvePart1()
-            assertThat(answer).isEqualTo(590784)
+            assertThat(answer).isEqualTo(12521)
         }
         @Test
         fun `Actual Answer`() {
             val answer = Day23(realInput).solvePart1()
-            assertThat(answer).isEqualTo(561032)
+            assertThat(answer).isEqualTo(15338)
         }
     }
     @Nested
