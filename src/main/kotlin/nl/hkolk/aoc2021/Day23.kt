@@ -90,36 +90,14 @@ class Day23(val input: List<String>) {
     val reserved = setOf(22, 24, 26, 28)
 
     fun possibleMoves(room: RoomSystem, rooms: Map<String,List<Int>>): List<Pair<Amphipod, Int>> {
-        var verbose = false
         val amphipods = room.amphipods
-        if( amphipods.count{it.location in 20..30} == 1 &&
-            amphipods.any { it.location == 13 && it.type == "B" } &&
-            amphipods.any { it.location == 0 && it.type == "B" }
-        ) {
-            verbose = false
-            //println(amphipods)
-        }
-        if( amphipods.count{it.location in 20..30} == 2 &&
-            amphipods.any { it.location == 13 && it.type == "B" } &&
-            amphipods.any { it.location == 15 && it.type == "C" } &&
-            amphipods.any { it.location == 0 && it.type == "B" } &&
-            amphipods.any { it.location == 6 && it.type == "C" }
-        ) {
-            verbose = true
-            println(amphipods)
-        }
-        if(amphipods.count{it.location in 20..30} > 4) {
-            if(verbose) { println("Too many in hallway") }
-            return listOf()
-        }
-
 
         if(amphipods.all { it.inOwnRoom() }) {
             return listOf()
         }
 
         val occupied = amphipods.map { it.location }.toSet()
-        var possibleMoves = mutableListOf<Pair<Amphipod, Int>>()
+        val possibleMoves = mutableListOf<Pair<Amphipod, Int>>()
         for (amphipod in amphipods) {
             // move from room to hallway
             val fromRoomToHallway = when (amphipod.location) {
@@ -135,9 +113,6 @@ class Day23(val input: List<String>) {
                     for (to in locations) {
                         val route = routeTo(amphipod.location, to)
                         if (route.intersect(occupied.filter { it != amphipod.location }.toSet()).isEmpty()) {
-                            if(verbose) {
-                                println("Simulate move: $amphipod to $to")
-                            }
                             possibleMoves += amphipod to to
                         }
                     }
@@ -146,25 +121,16 @@ class Day23(val input: List<String>) {
             if (amphipod.location in 20..30) {
                 val ownRoom = rooms[amphipod.type]!!
                 val safeOwnRoom = amphipods.filter { it.location in ownRoom && it.type != amphipod.type }.isEmpty()
-                if(verbose && amphipod.type == "C" && amphipod.location == 15) {
-                    println("Safe own room: $safeOwnRoom ($ownRoom contains ${amphipods.filter { it.location in ownRoom}})")
-                    println()
-                }
+
                 if(safeOwnRoom) {
-                    for (to in rooms[amphipod.type]!!) {
-                        val route = routeTo(amphipod.location, to)
-                        if (route.intersect(occupied.filter { it != amphipod.location }.toSet()).isEmpty()) {
-                            if(verbose) {
-                                println("Simulate move: $amphipod to $to")
-                            }
-                            possibleMoves += amphipod to to
-                        }
+                    val to = rooms[amphipod.type]!!.filter { !occupied.contains(it) }.maxOf{it}
+                    val route = routeTo(amphipod.location, to)
+                    if (route.intersect(occupied.filter { it != amphipod.location }.toSet()).isEmpty()) {
+
+                        possibleMoves += amphipod to to
                     }
                 }
             }
-        }
-        if(verbose) {
-            println(possibleMoves)
         }
         return possibleMoves
     }
@@ -178,10 +144,10 @@ class Day23(val input: List<String>) {
             //else -> (distance * from.getCost()) * 4
         }
 
-    private fun heuristic(goal: RoomSystem, next: RoomSystem): Int {
+    private fun heuristic(goal: RoomSystem, next: RoomSystem, verbose: Boolean = false): Int {
         var score = 0
-        val elimination = next.amphipods.toMutableList()
-        for(amphipod in goal.amphipods) {
+        val elimination = goal.amphipods.toMutableList()
+        for(amphipod in next.amphipods) {
             val element = elimination.first { it.type == amphipod.type }
             if(!element.inOwnRoom()) {
                 score += heuristicPath(element, amphipod.location, routeTo(element.location, amphipod.location).size-1)
@@ -190,6 +156,25 @@ class Day23(val input: List<String>) {
         }
         return score //+ next.amphipods.count { it.inHallway() } * 20000
     }
+
+    val breakpoint = listOf(
+        Amphipod("A", 20),
+        Amphipod("A", 21),
+        Amphipod("A", 29),
+        Amphipod("D", 30),
+        Amphipod("B", 0),
+        Amphipod("D", 4),
+        Amphipod("D", 8),
+        Amphipod("A", 12),
+        Amphipod("B", 5),
+        Amphipod("B", 9),
+        Amphipod("B", 13),
+        Amphipod("C", 2),
+        Amphipod("C", 6),
+        Amphipod("C", 10),
+        Amphipod("C", 14),
+        Amphipod("D", 15),
+    ).toRoomSystem()
 
     private fun findShortestPath(start: RoomSystem, goal: RoomSystem, rooms: Map<String, List<Int>>): Int {
 
@@ -235,21 +220,24 @@ class Day23(val input: List<String>) {
                 val next = current.move(amphipod, to)
 
                 if(!costFromStart.containsKey(next) || newCost < costFromStart[next]!!) {
-                    if(next == goal) {
-                        println(newCost)
+                    if(current == breakpoint) {
+                        if(amphipod.location == 0) {
+                            val asdf = heuristic(goal, next, true)
+                            println("To: $to, cost: $newCost, $asdf")
+                        }
                     }
+
                     costFromStart[next] = newCost
                     estimatedTotalCost[next] = newCost + heuristic(goal, next)
                     openVertices.add(next to (newCost + heuristic(goal, next)))
                     cameFrom[next] = current
                 }
             }
-            if(current.amphipods.count { it.location in 20..30 } > 5) {
-                println(current)
-            }
-            if(round++ % 1000 == 0) {
+            /*if(round++ % 1000 == 0) {
                 print(current.nice())
             }
+
+             */
         }
 
         throw IllegalStateException("No path found")
@@ -277,8 +265,9 @@ class Day23(val input: List<String>) {
 
     }
     fun solvePart2(): Int {
-        val rawRooms = input.drop(2).take(4).flatMap {  it.splitIgnoreEmpty(" ", "#", ".") }
-        val amphipods = rawRooms.mapIndexed { idx, name -> Amphipod(name, idx)}.toRoomSystem()
+        val rawRooms = input.drop(2).take(2).map {  it.splitIgnoreEmpty(" ", "#", ".") }
+        val injected = listOf(rawRooms[0], listOf("D", "C", "B", "A"), listOf("D", "B", "A", "C"), rawRooms[1]).flatten()
+        val amphipods = injected.mapIndexed { idx, name -> Amphipod(name, idx)}.toRoomSystem()
         val goal = listOf(
             Amphipod("A", 0),
             Amphipod("B", 1),
