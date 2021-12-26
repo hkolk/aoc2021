@@ -31,12 +31,12 @@ mod w 2
         @Test
         fun `Matches Example`() {
             val answer = Day24(realInput).solvePart1()
-            assertThat(answer).isEqualTo(12521)
+            assertThat(answer).isEqualTo(94992992796199L)
         }
         @Test
         fun `Actual Answer`() {
             val answer = Day24(realInput).solvePart1()
-            assertThat(answer).isEqualTo(15338)
+            assertThat(answer).isEqualTo(94992992796199L)
         }
     }
     @Nested
@@ -45,12 +45,12 @@ mod w 2
         @Test
         fun `Matches Example`() {
             val answer = Day24(testInput).solvePart2()
-            assertThat(answer).isEqualTo(44169)
+            assertThat(answer).isEqualTo(11931881141161L)
         }
         @Test
         fun `Actual Answer`() {
             val answer = Day24(realInput).solvePart2()
-            assertThat(answer).isEqualTo(47064)
+            assertThat(answer).isEqualTo(11931881141161L)
         }
     }
 }
